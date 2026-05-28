@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WORKSPACE_DIR="${WORKSPACE_DIR:-/workspace}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-/data}"
+
+WORKSPACE_DIR="${WORKSPACE_DIR:-/data/workspace}"
 OPENCODE_SERVER_COMMAND="${OPENCODE_SERVER_COMMAND:-web}"
-OPENCODE_DATA_DIR="${XDG_DATA_HOME:-/root/.local/share}/opencode"
+OPENCODE_DATA_DIR="${XDG_DATA_HOME}/opencode"
 OPENCODE_CONFIG_DIR="${XDG_CONFIG_HOME:-/root/.config}/opencode"
 AUTH_FILE="${OPENCODE_DATA_DIR}/auth.json"
 GLOBAL_CONFIG_FILE="${OPENCODE_CONFIG_DIR}/opencode.json"
