@@ -1,0 +1,162 @@
+# opencode on Render
+
+Run opencode as a hosted AI coding agent with the browser UI and `opencode attach`.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy-template/api/github/start?template_repo=<TEMPLATE_REPO_SLUG>)
+
+## What you get
+
+- A single Render Web Service running `opencode web`
+- The built-in opencode web UI on your Render URL
+- Remote TUI access with `opencode attach`
+- A 1 GB persistent disk for opencode auth, sessions, and SQLite state
+- Optional repo cloning into `/workspace` on first boot
+- The Render OpenCode plugin installed by default
+
+## How to use it
+
+### From your browser
+
+Deploy the template, then open the Render service URL.
+
+Log in with:
+
+- Username: `opencode`
+- Password: the generated `OPENCODE_SERVER_PASSWORD` value in the Render Dashboard
+
+### From your terminal
+
+Install opencode locally:
+
+```bash
+npm install -g opencode-ai
+```
+
+Attach to your hosted backend:
+
+```bash
+opencode attach https://your-service.onrender.com
+```
+
+Use the generated password when prompted. You can also pass it directly:
+
+```bash
+opencode attach https://your-service.onrender.com \
+  --username opencode \
+  --password "$OPENCODE_SERVER_PASSWORD"
+```
+
+## Bring your own repo
+
+Set `REPO_URL` during deploy to clone a working tree into `/workspace` on first boot.
+
+For a public repo:
+
+```txt
+REPO_URL=https://github.com/your-org/your-repo.git
+```
+
+For a specific branch:
+
+```txt
+REPO_URL=https://github.com/your-org/your-repo.git
+REPO_BRANCH=main
+```
+
+For a private GitHub repo, also set `GITHUB_TOKEN` to a token that can read the repo.
+
+The startup script only clones when `/workspace` is empty. If `/workspace` already has files, it leaves them alone.
+
+## Server command
+
+The template defaults to:
+
+```txt
+OPENCODE_SERVER_COMMAND=web
+```
+
+That starts the opencode web UI and API on the same Render URL.
+
+If you want the headless API server instead, set:
+
+```txt
+OPENCODE_SERVER_COMMAND=serve
+```
+
+## Configured providers
+
+Set one or more provider keys in Render:
+
+- `ANTHROPIC_API_KEY` unlocks Anthropic models.
+- `OPENROUTER_API_KEY` unlocks OpenRouter models.
+- `RENDER_API_KEY` unlocks Render MCP tools.
+
+The service writes these keys into `~/.local/share/opencode/auth.json` using opencode's API-key auth format.
+
+Anthropic OAuth is not supported in this hosted setup. Use `ANTHROPIC_API_KEY`.
+
+## What's pre-wired
+
+The image installs the Render OpenCode plugin from GitHub. It adds:
+
+- `render_validate_blueprint`
+- automatic validation when an agent edits `render.yaml` or `render.yml`
+- `/deploy-to-render`
+- `/check-render-status`
+- the `@render` subagent
+- bundled Render skills
+
+The startup script also merges the Render MCP server into `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "render": {
+      "type": "remote",
+      "url": "https://mcp.render.com/mcp",
+      "enabled": true,
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer {env:RENDER_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+Set `RENDER_API_KEY` in Render before asking opencode to manage Render resources.
+
+## Disk size
+
+The template starts with a 1 GB persistent disk mounted at:
+
+```txt
+/root/.local/share/opencode
+```
+
+To resize it, edit `render.yaml`:
+
+```yaml
+disk:
+  name: opencode-data
+  mountPath: /root/.local/share/opencode
+  sizeGB: 5
+```
+
+Then deploy the updated Blueprint.
+
+## Known limitations
+
+- Anthropic OAuth login does not work for hosted opencode. Use `ANTHROPIC_API_KEY`.
+- The opencode web UI fetches assets from opencode's CDN at runtime.
+- This is single-tenant. Do not share one deployment with multiple users.
+- `/workspace` is container filesystem by default. Commit and push important work back to your repo.
+- The image preinstalls TypeScript language server only. Other language servers can be installed in your repo or a fork of this template.
+
+## Learn more
+
+- [opencode docs](https://opencode.ai/docs)
+- [opencode CLI docs](https://opencode.ai/docs/cli/)
+- [opencode MCP docs](https://opencode.ai/docs/mcp-servers/)
+- [Render OpenCode plugin](https://github.com/render-oss/render-opencode-plugin)
