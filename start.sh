@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export XDG_DATA_HOME="${XDG_DATA_HOME:-/data}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-/root/project-data}"
 
-WORKSPACE_DIR="${WORKSPACE_DIR:-/data/workspace}"
+WORKSPACE_DIR="${WORKSPACE_DIR:-/root/project-data/workspace}"
 OPENCODE_SERVER_COMMAND="${OPENCODE_SERVER_COMMAND:-web}"
 OPENCODE_DATA_DIR="${XDG_DATA_HOME}/opencode"
 OPENCODE_CONFIG_DIR="${XDG_CONFIG_HOME:-/root/.config}/opencode"
@@ -62,6 +62,28 @@ configure_git_defaults() {
   git config --global user.name "${GIT_AUTHOR_NAME:-opencode on Render}"
   git config --global user.email "${GIT_AUTHOR_EMAIL:-opencode@render.example}"
   git config --global --add safe.directory "$WORKSPACE_DIR"
+}
+
+ensure_workspace_project() {
+  if directory_is_empty "$WORKSPACE_DIR"; then
+    cat > "$WORKSPACE_DIR/README.md" <<'MD'
+# opencode workspace
+
+This is the persisted workspace for your hosted opencode agent.
+
+Clone a repo here, create files from scratch, or redeploy with `REPO_URL` set.
+MD
+
+    cat > "$WORKSPACE_DIR/AGENTS.md" <<'MD'
+# Agent notes
+
+Work in this directory. Commit and push important changes to a remote Git repo.
+MD
+  fi
+
+  if [ ! -d "$WORKSPACE_DIR/.git" ]; then
+    git -C "$WORKSPACE_DIR" init -b main
+  fi
 }
 
 write_auth_file() {
@@ -158,6 +180,7 @@ if [ -n "${REPO_URL:-}" ] && directory_is_empty "$WORKSPACE_DIR"; then
   clone_repo
 fi
 
+ensure_workspace_project
 write_auth_file
 write_global_config
 write_project_config_if_missing

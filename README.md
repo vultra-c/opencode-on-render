@@ -10,7 +10,7 @@ Run opencode as a hosted AI coding agent with the browser UI and `opencode attac
 - The built-in opencode web UI on your Render URL
 - Remote TUI access with `opencode attach`
 - A 1 GB persistent disk for opencode state and your working tree
-- Optional repo cloning into `/data/workspace` on first boot
+- Optional repo cloning into `/root/project-data/workspace` on first boot
 - The Render OpenCode plugin installed by default
 
 ## How to use it
@@ -48,7 +48,7 @@ opencode attach https://your-service.onrender.com \
 
 ## Bring your own repo
 
-Set `REPO_URL` during deploy to clone a working tree into `/data/workspace` on first boot.
+Set `REPO_URL` during deploy to clone a working tree into `/root/project-data/workspace` on first boot.
 
 For a public repo:
 
@@ -65,7 +65,9 @@ REPO_BRANCH=main
 
 For a private GitHub repo, also set `GITHUB_TOKEN` to a token that can read the repo.
 
-The startup script only clones when `/data/workspace` is empty. If `/data/workspace` already has files, it leaves them alone.
+The startup script only clones when `/root/project-data/workspace` is empty. If `/root/project-data/workspace` already has files, it leaves them alone.
+
+If you do not set `REPO_URL`, the service creates a small default Git project in `/root/project-data/workspace` so the web UI has a project to open.
 
 ## Server command
 
@@ -91,7 +93,7 @@ Set one or more provider keys in Render:
 - `OPENROUTER_API_KEY` unlocks OpenRouter models.
 - `RENDER_API_KEY` unlocks Render MCP tools.
 
-The service writes these keys into `/data/opencode/auth.json` using opencode's API-key auth format.
+The service writes these keys into `/root/project-data/opencode/auth.json` using opencode's API-key auth format.
 
 Anthropic OAuth is not supported in this hosted setup. Use `ANTHROPIC_API_KEY`.
 
@@ -132,20 +134,20 @@ Set `RENDER_API_KEY` in Render before asking opencode to manage Render resources
 The template starts with a 1 GB persistent disk mounted at:
 
 ```txt
-/data
+/root/project-data
 ```
 
 The startup script uses that disk for:
 
-- `/data/opencode` for opencode auth, sessions, and SQLite state
-- `/data/workspace` for the repo or project files the agent edits
+- `/root/project-data/opencode` for opencode auth, sessions, and SQLite state
+- `/root/project-data/workspace` for the repo or project files the agent edits
 
 To resize it, edit `render.yaml`:
 
 ```yaml
 disk:
   name: opencode-data
-  mountPath: /data
+  mountPath: /root/project-data
   sizeGB: 5
 ```
 
@@ -156,7 +158,7 @@ Then deploy the updated Blueprint.
 - Anthropic OAuth login does not work for hosted opencode. Use `ANTHROPIC_API_KEY`.
 - The opencode web UI fetches assets from opencode's CDN at runtime.
 - This is single-tenant. Do not share one deployment with multiple users.
-- `/data/workspace` persists across restarts and deploys, but you should still commit and push important work back to your repo.
+- `/root/project-data/workspace` persists across restarts and deploys, but you should still commit and push important work back to your repo.
 - The image preinstalls TypeScript language server only. Other language servers can be installed in your repo or a fork of this template.
 
 ## Learn more
