@@ -2,7 +2,7 @@
 
 Run opencode as a hosted AI coding agent with the browser UI and `opencode attach`.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy-template/api/github/start?template_repo=<TEMPLATE_REPO_SLUG>)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy-template/api/github/start?template_repo=opencode-on-render)
 
 ## What you get
 
