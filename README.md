@@ -9,6 +9,7 @@ Run opencode as a hosted AI coding agent with the browser UI and `opencode attac
 - A single Render Web Service running `opencode web`
 - The built-in opencode web UI on your Render URL
 - Remote TUI access with `opencode attach`
+- A `standard` instance to avoid OOM loops on startup and active agent sessions
 - A 1 GB persistent disk for opencode state and your working tree
 - Optional repo cloning into `/root/project-data/workspace` on first boot
 - The Render OpenCode plugin installed by default
@@ -77,9 +78,9 @@ The template defaults to:
 OPENCODE_SERVER_COMMAND=web
 ```
 
-That starts the opencode web UI and API on the same Render URL.
+That starts opencode's web UI and API on the same Render URL.
 
-If you want the headless API server instead, set:
+If `opencode attach` returns HTML instead of API responses, switch to the headless server:
 
 ```txt
 OPENCODE_SERVER_COMMAND=serve
@@ -96,6 +97,22 @@ Set one or more provider keys in Render:
 The service writes these keys into `/root/project-data/opencode/auth.json` using opencode's API-key auth format.
 
 Anthropic OAuth is not supported in this hosted setup. Use `ANTHROPIC_API_KEY`.
+
+## Security notes
+
+This template gives you a remote coding agent, not a hardened sandbox.
+
+The agent can read and write files in its workspace, run shell commands, and use the environment variables you provide. Treat it like a single-tenant development box that can act with your credentials.
+
+Be careful with `RENDER_API_KEY`. Render API keys are broad credentials today. If you set one, opencode can use Render MCP tools with whatever access that key has. Leave `RENDER_API_KEY` unset unless you want the agent to manage Render resources from this service. Remove it when you do not need Render MCP, and rotate it if you expose logs, transcripts, or the service password.
+
+Do not use this template with untrusted users, untrusted prompts, or repos you do not want an AI agent to execute code from.
+
+## Instance size
+
+The template uses Render's `standard` plan by default.
+
+opencode can exceed the memory available on `starter`, especially with the web UI, provider metadata, plugins, MCP tools, and active coding sessions.
 
 ## What's pre-wired
 
