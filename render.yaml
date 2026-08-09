@@ -7,7 +7,7 @@ services:
     name: opencode
     runtime: docker
     region: oregon
-    plan: standard
+    plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
     disk:
